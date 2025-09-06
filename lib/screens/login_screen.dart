@@ -63,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 10),
               const Text(
-                "Go ahead and set up\nyour account",
+                "Lost & Found for Students – Making campus belongings easy to recover.",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 26,
@@ -72,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 5),
               const Text(
-                "Sign in to enjoy the best managing experience",
+                "Find what you lost, return what you found.",
                 style: TextStyle(color: Colors.grey, fontSize: 14),
               ),
               const SizedBox(height: 30),
