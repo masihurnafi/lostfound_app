@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'profile_screen.dart'; // Make sure you have this file
+import 'profile_screen.dart';
+import 'post_item_screen.dart';
+import 'chat_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -11,158 +13,37 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  void openChatWithUser(String otherUserId, String otherUserEmail) async {
+    final myId = _auth.currentUser!.uid;
+    final ids = [myId, otherUserId]..sort();
+    final chatId = ids.join('_');
+    await _firestore.collection('chats').doc(chatId).set({
+      'users': ids,
+      'userEmails': [_auth.currentUser!.email, otherUserEmail],
+    }, SetOptions(merge: true));
+    if (!mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatScreen(
+          chatId: chatId,
+          otherUserEmail: otherUserEmail ?? 'User',
+        ),
+      ),
+    );
+  }
+
+  String searchQuery = '';
+  final TextEditingController searchController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  final TextEditingController titleController = TextEditingController();
-  final TextEditingController descriptionController = TextEditingController();
-  final TextEditingController contactController = TextEditingController();
-  String category = "Lost"; // default
-
-  // Add Item
-  void addItem() async {
-    String title = titleController.text.trim();
-    String description = descriptionController.text.trim();
-    String contact = contactController.text.trim();
-
-    if (title.isEmpty || description.isEmpty || contact.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("All fields are required")));
-      return;
-    }
-
-    await _firestore.collection("items").add({
-      "title": title,
-      "description": description,
-      "category": category,
-      "date": FieldValue.serverTimestamp(),
-      "userId": _auth.currentUser!.uid,
-      "contact": contact,
-    });
-
-    titleController.clear();
-    descriptionController.clear();
-    contactController.clear();
-    Navigator.pop(context);
-  }
-
-  // Add Item Dialog
-  void showAddItemDialog() {
-    titleController.clear();
-    descriptionController.clear();
-    contactController.clear();
-    category = "Lost";
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Add Lost/Found Item"),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(hintText: "Title"),
-              ),
-              TextField(
-                controller: descriptionController,
-                decoration: const InputDecoration(hintText: "Description"),
-              ),
-              TextField(
-                controller: contactController,
-                decoration: const InputDecoration(hintText: "Contact Info"),
-              ),
-              DropdownButton<String>(
-                value: category,
-                items: ["Lost", "Found"]
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                    .toList(),
-                onChanged: (val) {
-                  setState(() {
-                    category = val!;
-                  });
-                },
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(onPressed: addItem, child: const Text("Add")),
-        ],
-      ),
+  void openPostItemScreen() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PostItemScreen(isLost: true)),
     );
-  }
-
-  // Edit Item Dialog
-  void showEditItemDialog(DocumentSnapshot doc) {
-    titleController.text = doc["title"];
-    descriptionController.text = doc["description"];
-    contactController.text = doc["contact"];
-    category = doc["category"];
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Edit Item"),
-        content: SingleChildScrollView(
-          child: Column(
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(hintText: "Title"),
-              ),
-              TextField(
-                controller: descriptionController,
-                decoration: const InputDecoration(hintText: "Description"),
-              ),
-              TextField(
-                controller: contactController,
-                decoration: const InputDecoration(hintText: "Contact Info"),
-              ),
-              DropdownButton<String>(
-                value: category,
-                items: ["Lost", "Found"]
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                    .toList(),
-                onChanged: (val) {
-                  setState(() {
-                    category = val!;
-                  });
-                },
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await _firestore.collection("items").doc(doc.id).update({
-                "title": titleController.text.trim(),
-                "description": descriptionController.text.trim(),
-                "contact": contactController.text.trim(),
-                "category": category,
-                "date": FieldValue.serverTimestamp(),
-              });
-
-              titleController.clear();
-              descriptionController.clear();
-              contactController.clear();
-              Navigator.pop(context);
-            },
-            child: const Text("Update"),
-          ),
-        ],
-      ),
-    );
+    setState(() {}); // Refresh after returning
   }
 
   // Delete Item
@@ -173,7 +54,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final user = _auth.currentUser;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Lost & Found"),
@@ -203,24 +83,44 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.all(16),
               color: Colors.green[900],
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    "Logged in as: ${user.email}",
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    "UID: ${user.uid}",
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  Expanded(
+                    child: Text(
+                      "Logged in as: ${user.email}",
+                      style: const TextStyle(color: Colors.white),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
             ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: TextField(
+              controller: searchController,
+              decoration: InputDecoration(
+                hintText: 'Search items...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 0,
+                  horizontal: 12,
+                ),
+              ),
+              onChanged: (val) {
+                setState(() {
+                  searchQuery = val.trim().toLowerCase();
+                });
+              },
+            ),
+          ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _firestore
                   .collection("items")
-                  .orderBy("date", descending: true)
+                  .orderBy("createdAt", descending: true)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -229,38 +129,107 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Center(child: Text("No items yet"));
                 }
-                final docs = snapshot.data!.docs;
+                final docs = snapshot.data!.docs.where((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  final name = (data["itemName"] ?? "")
+                      .toString()
+                      .toLowerCase();
+                  final desc = (data["description"] ?? "")
+                      .toString()
+                      .toLowerCase();
+                  return name.contains(searchQuery) ||
+                      desc.contains(searchQuery);
+                }).toList();
+                if (docs.isEmpty) {
+                  return const Center(
+                    child: Text("No items match your search."),
+                  );
+                }
                 return ListView.builder(
                   itemCount: docs.length,
                   itemBuilder: (context, index) {
                     final data = docs[index];
-                    return ListTile(
-                      title: Text(data["title"]),
-                      subtitle: Text(
-                        "${data["description"]}\nCategory: ${data["category"]}\nContact: ${data["contact"]}",
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
                       ),
-                      isThreeLine: true,
-                      trailing: data["userId"] == _auth.currentUser!.uid
-                          ? Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.edit,
-                                    color: Colors.blue,
-                                  ),
-                                  onPressed: () => showEditItemDialog(data),
+                      child: ListTile(
+                        leading:
+                            data["imageUrl"] != null &&
+                                data["imageUrl"].toString().isNotEmpty
+                            ? Image.network(
+                                data["imageUrl"],
+                                width: 60,
+                                height: 60,
+                                fit: BoxFit.cover,
+                              )
+                            : const Icon(Icons.image_not_supported, size: 40),
+                        title: Text(data["itemName"] ?? "No Name"),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(data["description"] ?? ""),
+                            Text("Category: ${data["category"] ?? ""}"),
+                            Text("Location: ${data["location"] ?? ""}"),
+                            Text("Type: ${data["type"] ?? ""}"),
+                            Text("Date: ${data["date"] ?? ""}"),
+                            if ((data["reward"] ?? '').toString().isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.card_giftcard,
+                                      color: Colors.amber,
+                                      size: 18,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      "Reward: ${data["reward"]}",
+                                      style: const TextStyle(
+                                        color: Colors.amber,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                IconButton(
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                  ),
-                                  onPressed: () => deleteItem(data.id),
+                              ),
+                          ],
+                        ),
+                        isThreeLine: true,
+                        trailing: data["userId"] == _auth.currentUser?.uid
+                            ? IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
                                 ),
-                              ],
-                            )
-                          : null,
+                                onPressed: () => deleteItem(data.id),
+                              )
+                            : ElevatedButton.icon(
+                                icon: const Icon(Icons.handshake, size: 18),
+                                label: const Text(
+                                  'Claim Item',
+                                  style: TextStyle(fontSize: 13),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green[700],
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 8,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  final ownerId = data["userId"];
+                                  final ownerEmail =
+                                      data["userEmail"] ?? 'User';
+                                  openChatWithUser(ownerId, ownerEmail);
+                                },
+                              ),
+                      ),
                     );
                   },
                 );
@@ -270,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: showAddItemDialog,
+        onPressed: openPostItemScreen,
         child: const Icon(Icons.add),
       ),
     );

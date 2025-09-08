@@ -125,6 +125,10 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 25),
               TextField(
                 controller: emailController,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
                 decoration: InputDecoration(
                   prefixIcon: const Icon(
                     Icons.email_outlined,
@@ -142,6 +146,10 @@ class _LoginScreenState extends State<LoginScreen> {
               TextField(
                 controller: passwordController,
                 obscureText: !isPasswordVisible,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
                 decoration: InputDecoration(
                   prefixIcon: const Icon(
                     Icons.lock_outline,
