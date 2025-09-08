@@ -17,10 +17,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Lost & Found',
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.green,
-      ),
+      theme: ThemeData(),
       home: const LoginScreen(),
     );
   }
