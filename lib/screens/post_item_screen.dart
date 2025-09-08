@@ -7,7 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 class PostItemScreen extends StatefulWidget {
   final bool isLost; // true for lost, false for found
-  const PostItemScreen({Key? key, required this.isLost}) : super(key: key);
+  const PostItemScreen({required this.isLost, super.key});
 
   @override
   State<PostItemScreen> createState() => _PostItemScreenState();
@@ -24,7 +24,7 @@ class _PostItemScreenState extends State<PostItemScreen> {
       final ref = FirebaseStorage.instance.ref().child(
         'item_images/$userId/$fileName',
       );
-      final uploadTask = await ref.putFile(file);
+      await ref.putFile(file);
       return await ref.getDownloadURL();
     } catch (e) {
       return null;
@@ -99,7 +99,7 @@ class _PostItemScreenState extends State<PostItemScreen> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: category,
+                initialValue: category,
                 items: categories
                     .map(
                       (cat) => DropdownMenuItem(value: cat, child: Text(cat)),
@@ -136,6 +136,7 @@ class _PostItemScreenState extends State<PostItemScreen> {
                     firstDate: DateTime(2020),
                     lastDate: DateTime.now(),
                   );
+                  if (!mounted) return;
                   if (picked != null) {
                     dateController.text = picked.toString().split(' ')[0];
                   }

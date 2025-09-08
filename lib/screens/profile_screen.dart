@@ -7,7 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -38,6 +38,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         profileImageUrl = doc["profileImageUrl"];
       }
     }
+    if (!mounted) return;
     setState(() {
       isLoading = false;
     });
@@ -72,7 +73,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         IOSUiSettings(title: 'Crop Profile Picture'),
       ],
     );
-    if (cropped == null) return;
+    if (cropped == null) {
+      return;
+    }
     setState(() => uploadingImage = true);
     try {
       final userId = _auth.currentUser!.uid;
@@ -84,6 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       await _firestore.collection('users').doc(userId).set({
         'profileImageUrl': url,
       }, SetOptions(merge: true));
+      if (!mounted) return;
       setState(() {
         profileImageUrl = url;
       });
@@ -91,11 +95,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
         context,
       ).showSnackBar(const SnackBar(content: Text('Profile picture updated!')));
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to upload image: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to upload image: $e')));
+      }
     } finally {
-      setState(() => uploadingImage = false);
+      if (mounted) setState(() => uploadingImage = false);
     }
   }
 

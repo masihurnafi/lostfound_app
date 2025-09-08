@@ -167,9 +167,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             'Full name',
                             Icons.person,
                           ),
-                          validator: (v) => (v == null || v.trim().isEmpty)
-                              ? 'Enter your full name'
-                              : null,
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) {
+                              return 'Enter your full name';
+                            } else {
+                              return null;
+                            }
+                          },
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
@@ -177,12 +181,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           keyboardType: TextInputType.emailAddress,
                           decoration: _inputDecoration('Email', Icons.email),
                           validator: (v) {
-                            if (v == null || v.trim().isEmpty)
+                            if (v == null || v.trim().isEmpty) {
                               return 'Enter your email';
+                            }
                             if (!RegExp(
                               r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}",
-                            ).hasMatch(v))
+                            ).hasMatch(v)) {
                               return 'Enter a valid email';
+                            }
                             return null;
                           },
                         ),
@@ -205,10 +211,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                               ),
                           validator: (v) {
-                            if (v == null || v.isEmpty)
+                            if (v == null || v.isEmpty) {
                               return 'Enter a password';
-                            if (v.length < 6)
+                            }
+                            if (v.length < 6) {
                               return 'Password must be at least 6 characters';
+                            }
                             return null;
                           },
                         ),
@@ -223,10 +231,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   'Phone',
                                   Icons.phone,
                                 ),
-                                validator: (v) =>
-                                    (v == null || v.trim().isEmpty)
-                                    ? 'Enter phone'
-                                    : null,
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) {
+                                    return 'Enter phone';
+                                  } else {
+                                    return null;
+                                  }
+                                },
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -237,10 +248,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   'Department',
                                   Icons.school,
                                 ),
-                                validator: (v) =>
-                                    (v == null || v.trim().isEmpty)
-                                    ? 'Enter department'
-                                    : null,
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) {
+                                    return 'Enter department';
+                                  } else {
+                                    return null;
+                                  }
+                                },
                               ),
                             ),
                           ],
@@ -255,10 +269,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   'Batch',
                                   Icons.calendar_today,
                                 ),
-                                validator: (v) =>
-                                    (v == null || v.trim().isEmpty)
-                                    ? 'Enter batch'
-                                    : null,
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) {
+                                    return 'Enter batch';
+                                  } else {
+                                    return null;
+                                  }
+                                },
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -269,10 +286,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   'University ID',
                                   Icons.badge,
                                 ),
-                                validator: (v) =>
-                                    (v == null || v.trim().isEmpty)
-                                    ? 'Enter ID'
-                                    : null,
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) {
+                                    return 'Enter ID';
+                                  } else {
+                                    return null;
+                                  }
+                                },
                               ),
                             ),
                           ],

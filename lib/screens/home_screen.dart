@@ -25,10 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ChatScreen(
-          chatId: chatId,
-          otherUserEmail: otherUserEmail ?? 'User',
-        ),
+        builder: (_) =>
+            ChatScreen(chatId: chatId, otherUserEmail: otherUserEmail),
       ),
     );
   }
