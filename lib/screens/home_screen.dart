@@ -6,7 +6,7 @@ import 'post_item_screen.dart';
 import 'chat_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -53,7 +53,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = _auth.currentUser;
     return Scaffold(
       appBar: AppBar(
         title: const Text("Lost & Found"),
@@ -78,22 +77,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          if (user != null)
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.green[900],
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      "Logged in as: ${user.email}",
-                      style: const TextStyle(color: Colors.white),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: TextField(
